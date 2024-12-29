@@ -1,0 +1,22 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "src/**/*.ts",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/dist/index.js"
+      }
+    ],
+    "env": {
+      "NODE_ENV": "production",
+      "MONGO_URI": "@mongo_uri",
+      "JWT_SECRET": "@jwt_secret",
+      "PORT": "8000"
+    }
+  }
+  
