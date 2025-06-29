@@ -1,6 +1,15 @@
 import { FormEvent, useState } from "react";
 import axios from "axios";
 
+function generateRandomId(length = 5) {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
 function Home() {
   const [content, setContent] = useState("");
   const [shareableLink, setShareableLink] = useState("");
@@ -11,15 +20,15 @@ function Home() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    const customId = generateRandomId();
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/clipboard`,
-        { content }
-      );
-      setShareableLink(
-        `${window.location.origin}/clipboard/${response.data.id}`
-      );
-    } catch (err: unknown) {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/clipboard`, {
+        customId,
+        content,
+      });
+      setShareableLink(`${window.location.origin}/clipboard/${customId}`);
+    } catch (err) {
       setError("Failed to create clipboard. Please try again.");
     }
     setIsLoading(false);
@@ -30,47 +39,38 @@ function Home() {
   };
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="max-w-lg mx-auto p-4">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="content"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Clipboard Content
-          </label>
-          <textarea
-            id="content"
-            name="content"
-            rows={4}
-            className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-          ></textarea>
-        </div>
+        <textarea
+          className="w-full p-2 border rounded"
+          placeholder="Enter clipboard content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+        />
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           disabled={isLoading}
+          className="w-full bg-indigo-600 text-white py-2 rounded"
         >
           {isLoading ? "Creating..." : "Create Clipboard"}
         </button>
       </form>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+
       {shareableLink && (
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700">Shareable Link:</p>
-          <div className="mt-1 flex rounded-md shadow-sm">
+          <p>Shareable Link:</p>
+          <div className="flex">
             <input
-              type="text"
               readOnly
               value={shareableLink}
-              className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
+              className="flex-1 border p-2 rounded-l"
             />
             <button
               onClick={copyToClipboard}
-              className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              className="bg-gray-200 px-3 rounded-r"
             >
               Copy
             </button>

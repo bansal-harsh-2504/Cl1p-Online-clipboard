@@ -12,22 +12,46 @@ app.get("/", (req, res) => {
   res.send("API Working!");
 });
 
-app.post("/clipboard", async (req, res) => {
-  const { content } = req.body;
-  const clip = await Clip.create({ content });
+app.post("/clipboard", async (req: any, res: any) => {
+  const { content, customId } = req.body;
 
-  res.json({
-    message: "Clip created successfully",
-    id: clip._id,
-  });
+  if (!customId || !content) {
+    return res
+      .status(400)
+      .json({ message: "customId and content are required" });
+  }
+
+  try {
+    const clip = await Clip.create({ customId, content });
+
+    res.json({
+      message: "Clip created successfully",
+      id: clip.customId,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to create clip", error });
+  }
 });
 
-app.get("/clipboard/:id", async (req, res) => {
+app.get("/clipboard/:id", async (req: any, res: any) => {
   const { id } = req.params;
-  const clip = await Clip.findById(id);
-  res.json({
-    content: clip?.content,
-  });
+
+  try {
+    const clip = await Clip.findOne({ customId: id });
+
+    if (!clip) {
+      return res.status(404).json({ message: "Clipboard not found" });
+    }
+
+    res.json({
+      content: clip.content,
+      expiresAt: new Date(
+        clip.createdAt.getTime() + 60 * 60 * 1000
+      ).toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving clip", error });
+  }
 });
 
 app.listen(process.env.PORT, () => {

@@ -1,0 +1,13 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+  
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl backend
+        run: curl -m 10 https://url.com/health || true

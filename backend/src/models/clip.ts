@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 
 const ClipSchema = new mongoose.Schema({
-  content: String,
+  customId: { type: String, unique: true, required: true },
+  content: { type: String, required: true },
+  expiresAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now, index: { expires: "1h" } },
 });
 
